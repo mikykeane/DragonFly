@@ -8,13 +8,17 @@ package dragonfly;
 import com.eclipsesource.json.JsonObject;
 
 /**
- *
- * @author miguelkeane
+ * Clase dónde gestionaremos la batería del agente y su necesidad de hacer parada para recargar.  
+ * @author Miguel Keane
  */
 public class Fuel {
     int fuel;
     
-     public void FuelParser(JsonObject object)
+    /**
+     * 
+     * @param object
+     */
+    public void FuelParser(JsonObject object)
     {
         //Parseamos los datos de JSON
     }

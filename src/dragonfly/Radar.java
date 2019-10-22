@@ -8,16 +8,17 @@ package dragonfly;
 import com.eclipsesource.json.JsonObject;
 
 /**
- *
- * @author miguelkeane
+ * Clase donde gestionaremos y haremos utilizable la percepción del mundo del agente
+ * @author Miguel Keane
  */
 public class Radar {
     
     double scanner[][]; // Tenemos que decidir como vamos a escánear los resultados. Falta mirar un poco mejor los guiones. 
     
-    
-    
-    
+    /**
+     *
+     * @param object
+     */
     public void RadarParser(JsonObject object)
     {
         //Parseamos los datos de JSON
