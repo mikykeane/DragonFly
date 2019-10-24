@@ -7,6 +7,9 @@ package dragonfly;
 
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.AgentsConnection;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 
 
@@ -30,21 +33,33 @@ public class Main{
         
         DragonFly dragonFly;
 
+        FileReader inputFile=null;
+        try{
+            inputFile = new FileReader("pass.txt");
+            
+        }catch(FileNotFoundException err){
+            System.out.println("Error reading the password file");
+        }
+        Scanner parser = new Scanner(inputFile);
+        
         ////////////////////////////////////////////////////////////////////
         // NO HACER PUSH. DATOS PRIVADOS, METERLOS EN .gitignore después del primer push
-        String virtualhost = "";
-        String username = ""; 
-        String pass = ""; 
+        String virtualhost = parser.nextLine();
+        String username = parser.nextLine(); 
+        String pass = parser.nextLine(); 
         //////////////////////////////////////////////////////////////////////
-
+        System.out.println(virtualhost);
+        System.out.println(username);
+        System.out.println(pass);
         String map = "map1"; 
 
+
         AgentsConnection.connect("isg2.ugr.es",6000, virtualhost, username, pass, false);
+        
 
-        try {
-
-                dragonFly = new DragonFly(new AgentID("dron1"), map, virtualhost);
-
+        try {                
+                dragonFly = new DragonFly(new AgentID("dron1"), map, virtualhost, username, pass);
+           
                 dragonFly.start();
                 
         } catch (Exception ex) {
