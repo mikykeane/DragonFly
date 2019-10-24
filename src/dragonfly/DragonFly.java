@@ -5,9 +5,14 @@
  */
 package dragonfly;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Clase principal del Agente DragonFly. Aquí estará especificada la heurística y hará uso de las demás clases para desenvolverse y alcanzar su objetivo
@@ -25,18 +30,22 @@ public class DragonFly extends SingleAgent{
     
     //Posibles estados del agente:
     
-    private final int NOLOG=0, LOGIN=1, LISTENING=2, END=3;
+    private final int NOLOG=0, LOGIN=1, THINKING=2, LISTENING=3, END=4;
     
     
     private ACLMessage inbox, outbox; 
     
-    private boolean found; 
+    private boolean end; 
     private int state;
     private String myMap;
-    private AgentID action; 
+    private String action; 
+    
+    private String myUser;
+    private String myPass; 
     
     private String key;
-    private AgentID myAgent;
+    private AgentID myServer;
+    
 
     /**
      *
@@ -61,17 +70,19 @@ public class DragonFly extends SingleAgent{
      * 
      * 
      */
-    public DragonFly(AgentID agentID, String map, String virtualhost) throws Exception{
+    public DragonFly(AgentID agentID, String map, String virtualhost, String user, String pass) throws Exception{
         super (agentID);
         myMap = map;
-        myAgent = new AgentID(virtualhost);
+        myServer = new AgentID (virtualhost);
         
+        myUser=user;
+        myPass=pass;
         myKnowledge = new Knowledge(myMap);  // Hay que decidir cómo vamos a hacer la memoria. Sabéis trabajar CSV en java? yo lo he usado en Python, pero podría ser una buena solución, de esa forma inicializamos el mapa X, lo cargamos y tenemos ya guardada la información de anteriores ejecuciones. 
         
     }
     
     /**
-     * @author miguelkeane
+     * @author Miguel Keane
      * 
      * 
      */
@@ -84,21 +95,136 @@ public class DragonFly extends SingleAgent{
         inbox=null;
         outbox=null; 
         state=NOLOG;
-        found=false;
+        end=false;
         
         key="";
         
+    }
+    
+    /**
+     * Método para gestionar los posibles estados del agente, indicando que debe hacer en cada etapa.
+     * 
+     * @author Miguel Keane Cañizares y Mar Garcia Cabello
+     */
+    @Override
+    public void execute(){
+        JsonObject parser = new JsonObject();
+        
+        while(!end){
+            switch(state){
+                case NOLOG:
+                    login();
+                    state=LOGIN;
+                    break;
+                case LOGIN:
+                    System.out.println("Agent "+this.getName()+" is waiting for login response");
+                    
+                    receiveMessage();
+                    break;
+                            
+            }
+            
+            
+        }
         
         
     }
    
-    /**
-     *
-     */
-    @Override
-    public void start() {
-        
-    }
+   
     
+    /**
+    * Método para hacer login con el servidor
+    * 
+    * @author Miguel Keane Cañizares
+     * @param user
+     * @param password
+    * 
+    */
+    public void login(){
+        JsonObject parser = new JsonObject();
+        try{
+            parser.add("command", "login");
+            parser.add("map",  myMap);
+            parser.add("radar", true);
+            parser.add("elevation", true);
+            parser.add("magnetic",true);
+            parser.add("gps", true);
+            parser.add("fuel", true);
+            parser.add("gonio", true);
+            parser.add("user",this.myUser);
+            parser.add("password",this.myPass);
+        }catch( Exception e){
+            System.err.println("Fallo enviando la señal de login al servidor");
+        }
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(myServer);
+        outbox.setContent(parser.toString());
+        System.out.println(outbox);
+        this.send(outbox);
+    }
+
+    
+    /**
+    * Método para gestionar las respuestas del servidor
+    * 
+    * @author Miguel Keane Cañizares
+    * 
+    */
+    private void receiveMessage() {
+        try{
+            inbox= receiveACLMessage();
+            
+            JsonObject parser = Json.parse(inbox.getContent()).asObject();
+            
+            if (parser.get("result") != null){
+                //gestionResultados(parser);
+            }
+            
+            
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DragonFly.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    
+    /**
+    * Método para gestionar los resultado en JSON del servidor
+    * 
+    * @author Miguel Keane Cañizares
+    * @param parser JsonObject que contiene la información que se desea parsear
+    * 
+    */
+    private void resultManagement(JsonObject parser)
+    {
+        String result= parser.get("result").asString();
+        switch (result){
+            case "OK":
+                if (parser.get("in-reply-to").asString().equals("login")){
+                    state=THINKING;
+                    key=parser.get("key").asString();
+                }else if(parser.get("in-reply-to").asString().equals("login")){
+                    state=END;
+                }               
+                break;
+            case "CRASHED":
+                state=END;
+                System.err.println("El agente "+ this.getName()+ " se ha estrellado. Misión fracasada. Mejore la heurística");
+                break;
+            case "BAD_COMMAND":
+                state=END;
+                System.err.println("Error: Accion no reconocida");
+                break;
+            case "BAD_KEY":
+                state=END;
+                System.err.println("Error: La llave introducida es incorrecta.");
+                break;
+            case "BAD_MAP":
+                state=END;
+                System.err.println("Error: El mapa introducido no es válido. Corrija. ");
+                break;
+               
+        }
+    }
     
 }
