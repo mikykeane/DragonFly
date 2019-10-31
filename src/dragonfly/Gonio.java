@@ -5,12 +5,19 @@
  */
 package dragonfly;
 
+import com.eclipsesource.json.JsonObject;
+
 /**
  *
  * Clase que gestiona la distancia y la dirección a la que se encuentra el objetivo
  * @author miguelkeane
  */
 public class Gonio {
-    private double distance; 
-    private double angle; 
+    int distance; 
+    double angle; 
+    
+    public void GonioParser(JsonObject object){
+        distance= object.get("distance").asObject().asInt();
+        angle = object.get("angle").asObject().asDouble();
+    }
 }

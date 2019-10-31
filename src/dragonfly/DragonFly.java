@@ -25,12 +25,16 @@ public class DragonFly extends SingleAgent{
     // Clases que usará el Agente. NOTA/ TODO: Posiblemente faltan clases, Magnetic, Gonio, etc... Id añadiendolas
     Fuel myFuel;
     GPS myGPS;
-    Radar myRadar;
+    Scanner myRadar;
     Knowledge myKnowledge;
+    Gonio myGonio;
+    
+    String myDirection;
     
     //Posibles estados del agente:
     
     private final int NOLOG=0, LOGIN=1, THINKING=2, LISTENING=3, END=4;
+    
     
     
     private ACLMessage inbox, outbox; 
@@ -90,7 +94,7 @@ public class DragonFly extends SingleAgent{
     public void init(){
         myFuel = new Fuel();
         myGPS = new GPS();
-        myRadar = new Radar();
+        myRadar = new Scanner();
         myKnowledge = new Knowledge();
         inbox=null;
         outbox=null; 
@@ -121,9 +125,10 @@ public class DragonFly extends SingleAgent{
                     
                     receiveMessage();
                     break;
-                            
+                case THINKING:
+                    think();
+           
             }
-            
             
         }
         
@@ -163,6 +168,36 @@ public class DragonFly extends SingleAgent{
         System.out.println(outbox);
         this.send(outbox);
     }
+    
+     public void logout(){
+        JsonObject parser = new JsonObject();
+        try{
+            parser.add("command", "logout");
+            parser.add("key",this.key);
+        }catch( Exception e){
+            System.err.println("Fallo enviando la señal de logout al servidor");
+        }
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(myServer);
+        outbox.setContent(parser.toString());
+        System.out.println(outbox);
+     }
+     
+     public void move(){
+        JsonObject parser = new JsonObject();
+        try{
+            parser.add("command", myDirection);
+            parser.add("key",this.key);
+        }catch( Exception e){
+            System.err.println("Fallo enviando la señal de movimiento al servidor");
+        }
+        outbox = new ACLMessage();
+        outbox.setSender(this.getAid());
+        outbox.setReceiver(myServer);
+        outbox.setContent(parser.toString());
+        System.out.println(outbox);
+     }
 
     
     /**
@@ -178,7 +213,13 @@ public class DragonFly extends SingleAgent{
             JsonObject parser = Json.parse(inbox.getContent()).asObject();
             
             if (parser.get("result") != null){
-                //gestionResultados(parser);
+                resultManagement(parser);
+            }
+            else if(parser.get("gonio") != null) {
+                myGonio.GonioParser(parser);
+            }
+            else if (parser.get("radar")!= null){
+                myRadar.ScannerParser(parser);
             }
             
             
@@ -225,6 +266,13 @@ public class DragonFly extends SingleAgent{
                 break;
                
         }
+    }
+    
+    
+    private void think(){
+        
+        myDirection="moveNW";
+        
     }
     
 }
