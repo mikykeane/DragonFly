@@ -87,5 +87,37 @@ public class Scanner {
             return -1;
     }
     
+        /**
+     * La función devuelve la altura de la casilla
+     * @author María del Mar García Cabello 
+     * @param posx posicion x del mapa
+     * @param posy posicion y del mapa
+     * @return objetivo 0 si estas fuera del mapa. Una altura de 5-255 en otro caso valido. 
+     * 
+     */
+    public int alturaCasilla(int posx, int posy){
+        //No se puede salir del mapa
+        if(posx<11 && posy<11)
+            return radar[posx][posy];
+        else
+            return -1;
+    }
+    
+        /**
+     * La función devuelve la altura del dron.
+     * @author María del Mar García Cabello 
+     * @param posx posicion x del mapa
+     * @param posy posicion y del mapa
+     * @return objetivo Si el valor es negativo, es que debemos subir. 
+     * 
+     */
+    public int alturaDron(int posx, int posy){
+        //No se puede salir del mapa
+        if(posx<11 && posy<11)
+            return elevation[posx][posy];
+        else
+            return -1;
+    }
+    
 }
 
