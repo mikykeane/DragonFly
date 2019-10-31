@@ -51,7 +51,7 @@ public class Main{
         System.out.println(virtualhost);
         System.out.println(username);
         System.out.println(pass);
-        String map = "map1"; 
+        String map = "playground"; 
 
 
         AgentsConnection.connect("isg2.ugr.es",6000, virtualhost, username, pass, false);
