@@ -77,7 +77,7 @@ public class DragonFly extends SingleAgent{
     public DragonFly(AgentID agentID, String map, String virtualhost, String user, String pass) throws Exception{
         super (agentID);
         myMap = map;
-        myServer = new AgentID (virtualhost);
+        myServer = new AgentID("Nahn");
         
         myUser=user;
         myPass=pass;
@@ -127,7 +127,10 @@ public class DragonFly extends SingleAgent{
                     break;
                 case THINKING:
                     think();
-           
+                    move();
+                case END:
+                    logout();
+                    end=true;
             }
             
         }
@@ -238,15 +241,15 @@ public class DragonFly extends SingleAgent{
     */
     private void resultManagement(JsonObject parser)
     {
-        String result= parser.get("result").asString();
+        String result= parser.get("result").asString().toUpperCase();
         switch (result){
             case "OK":
                 if (parser.get("in-reply-to").asString().equals("login")){
                     state=THINKING;
                     key=parser.get("key").asString();
-                }else if(parser.get("in-reply-to").asString().equals("login")){
-                    state=END;
-                }               
+                    System.out.println("Recibido OK a login");
+                }
+                               
                 break;
             case "CRASHED":
                 state=END;
