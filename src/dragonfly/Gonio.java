@@ -19,23 +19,23 @@ public class Gonio {
     double angle; 
     //Aqui guardaremos los datos de los angulos
     HashMap<Integer, String> angulos; 
- 
+    
+    String move;
         /**
      * @author María del Mar García Cabello
      * @param object
-     * @return movimiento
      */
-    public String GonioParser(JsonObject object){
+    public void GonioParser(JsonObject object){
            angulos=new HashMap<>();
             //Rellenamos el vector con los grados de los angulos
-           angulos.put(0,"Norte");
-           angulos.put(45,"NorEste");
-           angulos.put(90,"Este");
-           angulos.put(135,"SurEste");
-           angulos.put(180,"Sur");
-           angulos.put(225,"SurOeste");
-           angulos.put(270,"Este");
-           angulos.put(315,"NorOeste");
+           angulos.put(0,"moveN");
+           angulos.put(45,"moveNE");
+           angulos.put(90,"moveE");
+           angulos.put(135,"moveSE");
+           angulos.put(180,"moveS");
+           angulos.put(225,"moveSW");
+           angulos.put(270,"moveW");
+           angulos.put(315,"moveNW");
         
         //Obtenemos la distancia en numero de celdas al objetivo 
         distance= object.get("distance").asObject().asInt();
@@ -68,8 +68,7 @@ public class Gonio {
             }
                 
         } 
-        
-        return movimiento;
+       move=movimiento;
     }
        
 }
