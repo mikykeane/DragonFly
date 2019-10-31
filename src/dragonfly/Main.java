@@ -43,7 +43,7 @@ public class Main{
         Scanner parser = new Scanner(inputFile);
         
         ////////////////////////////////////////////////////////////////////
-        // NO HACER PUSH. DATOS PRIVADOS, METERLOS EN .gitignore después del primer push
+        // NO HACER PUSH. DATOS PRIVADOS. METERLOS EN .gitignore después del primer push
         String virtualhost = parser.nextLine();
         String username = parser.nextLine(); 
         String pass = parser.nextLine(); 
