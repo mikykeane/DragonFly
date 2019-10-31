@@ -25,29 +25,67 @@ public class Scanner {
     public void ScannerParser(JsonObject object)
     {
         //Parseamos los datos de JSON
+        radarParser(object);
+        if (object.get("magnetic")!= null){ //¿Por que comprobamos si esta nulo? Si manda radar manda todos, creo
+            magneticParser(object);
+        }
+        if (object.get("elevation")!= null){
+            elevationParser(object);
+        }       
+        
+    }
+    /**
+     * @author María del Mar García Cabello, Miguel Keane  
+     * @param object
+     */
+    private void radarParser(JsonObject object){
         JsonArray toParse = object.get("radar").asArray();
         for (int i=0; i<11; i++){
             for(int j=0; j<11; j++){
                 radar[i][j]= toParse.get(j+i).asInt();
             }
         }
-        
-        if (object.get("magnetic")!= null){
-                toParse = object.get("magnetic").asArray();
-            for (int i=0; i<11; i++){
-               for(int j=0; j<11; j++){
-                   radar[i][j]= toParse.get(j+i).asInt();
-               }
-            }
-        }
-        if (object.get("elevation")!= null){
-             toParse = object.get("elevation").asArray();
-            for (int i=0; i<11; i++){
-                for(int j=0; j<11; j++){
-                    radar[i][j]= toParse.get(j+i).asInt();
-                }
-            }
-        }
-        
     }
+    /**
+     * @author María del Mar García Cabello, Miguel Keane   
+     * @param object
+     */
+    private void magneticParser(JsonObject object){
+        JsonArray toParse = object.get("magnetic").asArray();
+        for (int i=0; i<11; i++){
+            for(int j=0; j<11; j++){
+                magnetic[i][j]= toParse.get(j+i).asInt();
+            }
+        }
+    }
+    /**
+     * @author María del Mar García Cabello, Miguel Keane  
+     * @param object
+     */  
+    private void elevationParser(JsonObject object){
+        JsonArray toParse = object.get("elevation").asArray();
+        for (int i=0; i<11; i++){
+            for(int j=0; j<11; j++){
+                elevation[i][j]= toParse.get(j+i).asInt();
+            }
+        }
+    }
+    
+    /**
+     * La función devuelve el valor de magnetic en un punto
+     * @author María del Mar García Cabello 
+     * @param posx posicion x del mapa
+     * @param posy posicion y del mapa
+     * @return objetivo 0 si la celda no es objetivo, 1 si lo es. 
+     * 
+     */
+    public int comprobarCasilla(int posx, int posy){
+        //No se puede salir del mapa
+        if(posx<11 && posy<11)
+            return magnetic[posx][posy];
+        else
+            return -1;
+    }
+    
 }
+
