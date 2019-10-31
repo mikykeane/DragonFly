@@ -108,7 +108,7 @@ public class Scanner {
      * @author María del Mar García Cabello 
      * @param posx posicion x del mapa
      * @param posy posicion y del mapa
-     * @return objetivo Si el valor es negativo, es que debemos subir. 
+     * @return objetivo Si el valor es negativo, es que debemos subir. 400 si la posicion indicada no es correcta.
      * 
      */
     public int alturaDron(int posx, int posy){
@@ -116,7 +116,7 @@ public class Scanner {
         if(posx<11 && posy<11)
             return elevation[posx][posy];
         else
-            return -1;
+            return 400;
     }
     
 }
