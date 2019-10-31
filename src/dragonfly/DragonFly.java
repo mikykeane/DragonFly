@@ -232,6 +232,12 @@ public class DragonFly extends SingleAgent{
             }//En el caso de que sea Fuel, lo gestionamos en Fuel
              else if(parser.get("fuel") != null) {
                 myFuel.FuelParser(parser);
+            }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
+             else if(parser.get("goal") != null) {
+                myFuel.FuelParser(parser);
+            }//En el caso de que sea status, 
+             else if(parser.get("status") != null) {
+                myFuel.FuelParser(parser);
             }
             
             
