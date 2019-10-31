@@ -72,14 +72,14 @@ public class Scanner {
     }
     
     /**
-     * La función devuelve el valor de magnetic en un punto
+     * La función devuelve el valor de magnetic en un punto. Si esa casilla es objetivo.
      * @author María del Mar García Cabello 
      * @param posx posicion x del mapa
      * @param posy posicion y del mapa
      * @return objetivo 0 si la celda no es objetivo, 1 si lo es. 
      * 
      */
-    public int comprobarCasilla(int posx, int posy){
+    public int casillaObjetivo(int posx, int posy){
         //No se puede salir del mapa
         if(posx<11 && posy<11)
             return magnetic[posx][posy];
