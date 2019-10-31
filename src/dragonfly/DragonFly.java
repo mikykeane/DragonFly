@@ -70,6 +70,7 @@ public class DragonFly extends SingleAgent{
      * @param agentID id del agente manejado por Magentix
      * @param map mapa que se va a ejecutar
      * @param virtualhost Recibirá los mensajes ACL del servidor 
+     * @param user 
      * @throws java.lang.Exception 
      * 
      * 
@@ -206,23 +207,31 @@ public class DragonFly extends SingleAgent{
     /**
     * Método para gestionar las respuestas del servidor
     * 
-    * @author Miguel Keane Cañizares
+    * @author Miguel Keane Cañizares, María del Mar García Cabello
     * 
     */
     private void receiveMessage() {
         try{
+            //Recivimos un mensaje del servidor
             inbox= receiveACLMessage();
-            
+            //Lo pasamos a un JSon para poder trabajar con el
             JsonObject parser = Json.parse(inbox.getContent()).asObject();
             
+            //Si es resultado, vamos a comprobar el estado en resultManagement
             if (parser.get("result") != null){
                 resultManagement(parser);
-            }
+            }//En el caso de que sea gonio, lo gestionamos en gonio
             else if(parser.get("gonio") != null) {
                 myGonio.GonioParser(parser);
-            }
-            else if (parser.get("radar")!= null){
+            }//Si es radar,magnetic o elevatio, lo gestionamos en scanner
+            else if (parser.get("radar")!= null || parser.get("magnetic")!= null || parser.get("elevation")!= null){
                 myRadar.ScannerParser(parser);
+            }//En el caso de que sea GPS, lo gestionamos en GPS
+             else if(parser.get("gps") != null) {
+                myGPS.GPSParser(parser);
+            }//En el caso de que sea Fuel, lo gestionamos en Fuel
+             else if(parser.get("fuel") != null) {
+                myFuel.FuelParser(parser);
             }
             
             
