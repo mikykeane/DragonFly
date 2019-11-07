@@ -17,12 +17,42 @@ public class GPS {
     int z;
     
     /**
-     *
+     * @author María del Mar García Cabello
      * @param object
      */
     public void GPSParser(JsonObject object)
     {
-        //Parseamos los datos de JSON
+        //Parseamos los datos de JSON 
+        //Obtenemos la dirección en la que nos despertamos
+        x= object.get("x").asObject().asInt();
+        y= object.get("y").asObject().asInt();
+        z= object.get("z").asObject().asInt();
+        
     }
+    
+     /**
+     * @author María del Mar García Cabello
+     * @return x
+     */
+    public int getX() {
+        return x;
+    }
+
+     /**
+     * @author María del Mar García Cabello
+     * @return y
+     */
+    public int getY() {
+        return y;
+    }
+
+    /**
+     * @author María del Mar García Cabello
+     * @return z
+     */
+    public int getZ() {
+        return z;
+    }
+    
    
 }
