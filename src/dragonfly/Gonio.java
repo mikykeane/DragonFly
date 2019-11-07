@@ -7,6 +7,7 @@ package dragonfly;
 
 import com.eclipsesource.json.JsonObject;
 import java.util.HashMap;
+
 /**
  *
  * Clase que gestiona la distancia y la dirección a la que se encuentra el objetivo
@@ -20,7 +21,8 @@ public class Gonio {
     //Aqui guardaremos los datos de los angulos
     HashMap<Integer, String> angulos;   
     String move;
-        /**
+    
+    /**
      * @author María del Mar García Cabello
      * @param object
      */
@@ -30,14 +32,21 @@ public class Gonio {
         distance= object.get("distance").asObject().asInt();
         //Obtenemos la dirección al que está el objetivo(en angulos)
         angle = object.get("angle").asObject().asDouble(); 
-        
+        /*
+        //Obtenemos la distancia en numero de celdas al objetivo 
+        distance= object.get("gonio").asObject().get("distance").asInt();
+        //Obtenemos la dirección al que está el objetivo(en angulos)
+        angle = object.get("perceptions").asObject().get("gonio").asObject().get("angle").asInt(); 
+       
+        */
     }
     
     /**
      * @author María del Mar García Cabello
+     * @return move siguiente movimiento que tendremos que realizar
      *
      */
-    public void objetivo(){
+    public String objetivo(){
         angulos=new HashMap<>();
             //Rellenamos el vector con los grados de los angulos
            angulos.put(0,"moveN");
@@ -54,7 +63,7 @@ public class Gonio {
         double distancia;
         //Distancia minima y hacia donde nos deberemos mover
         double distanciaMinima=360;
-        String movimiento="Norte";//Por defecto nos moveremos al norte
+        String movimiento="moveN";//Por defecto nos moveremos al norte
         
         //Vamos a comparar la dirección del objetivo con las direcciones a las que nos podemos mover
         //para encontrar la más cercana
@@ -75,6 +84,8 @@ public class Gonio {
                 
         } 
        move=movimiento; 
+       return move;
     }
-       
+      
+    
 }
