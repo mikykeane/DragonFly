@@ -15,7 +15,7 @@ import java.util.HashMap;
  */
 public class Gonio {
     //Distancia a la casilla objetivo en numero de celdas
-    int distance; 
+    double distance; 
     //Posicion de la casilla objetivo en angulos
     double angle; 
     //Aqui guardaremos los datos de los angulos
@@ -29,7 +29,9 @@ public class Gonio {
     public void GonioParser(JsonObject object){
            
         //Obtenemos la distancia en numero de celdas al objetivo 
-        distance= object.get("distance").asObject().asInt();
+        distance= object.get("distance").asObject().asDouble();
+        System.out.println("La distancia es ");
+        System.out.println(distance);
         //Obtenemos la dirección al que está el objetivo(en angulos)
         angle = object.get("angle").asObject().asDouble(); 
         /*
@@ -84,6 +86,7 @@ public class Gonio {
                 
         } 
        move=movimiento; 
+       System.out.println(move);
        return move;
     }
       
