@@ -34,13 +34,7 @@ public class Gonio {
         System.out.println(distance);
         //Obtenemos la dirección al que está el objetivo(en angulos)
         angle = object.get("angle").asObject().asDouble(); 
-        /*
-        //Obtenemos la distancia en numero de celdas al objetivo 
-        distance= object.get("gonio").asObject().get("distance").asInt();
-        //Obtenemos la dirección al que está el objetivo(en angulos)
-        angle = object.get("perceptions").asObject().get("gonio").asObject().get("angle").asInt(); 
-       
-        */
+
     }
     
     /**
