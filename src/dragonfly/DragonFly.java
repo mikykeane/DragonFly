@@ -6,22 +6,10 @@
 package dragonfly;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
-import com.eclipsesource.json.JsonObject;
-import es.upv.dsic.gti_ia.core.ACLMessage;
-import es.upv.dsic.gti_ia.core.AgentID;
-import es.upv.dsic.gti_ia.core.SingleAgent;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,6 +70,7 @@ public class DragonFly extends SingleAgent{
      * @param map mapa que se va a ejecutar
      * @param virtualhost Recibirá los mensajes ACL del servidor 
      * @param user 
+     * @param pass 
      * @throws java.lang.Exception 
      * 
      * 
