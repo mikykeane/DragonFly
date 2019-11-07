@@ -15,7 +15,7 @@ public class Fuel {
     double fuel;
     
     /**
-     * 
+     *  @author María del Mar García Cabello
      * @param object
      */
     public void FuelParser(JsonObject object)
@@ -26,16 +26,24 @@ public class Fuel {
         fuel= object.get("fuel").asObject().asDouble();
     }
     
-    public double Recargar(){
-        
+     /**
+     *  @author María del Mar García Cabello
+     *
+     */
+    public void Recargar(){
         fuel=100;
-        return 100;
     }
-    
+    /**
+     *  @author María del Mar García Cabello
+     *
+     */
     public void Moverse(){
         fuel=fuel-0.5;
     }
-    
+    /**
+     *  @author María del Mar García Cabello
+     *  @return fuel
+     */
     public double getFuel(){
         return fuel;
     }
