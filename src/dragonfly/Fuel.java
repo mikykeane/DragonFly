@@ -35,4 +35,8 @@ public class Fuel {
     public void Moverse(){
         fuel=fuel-0.5;
     }
+    
+    public double getFuel(){
+        return fuel;
+    }
 }
