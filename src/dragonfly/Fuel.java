@@ -12,7 +12,7 @@ import com.eclipsesource.json.JsonObject;
  * @author Miguel Keane
  */
 public class Fuel {
-    int fuel;
+    double fuel;
     
     /**
      * 
@@ -21,5 +21,22 @@ public class Fuel {
     public void FuelParser(JsonObject object)
     {
         //Parseamos los datos de JSON
+        
+        //Obtenemos la cantidad de fuel que nos queda
+        fuel= object.get("fuel").asObject().asDouble();
+    }
+    
+    public double Recargar(){
+        
+        fuel=100;
+        return 100;
+    }
+    
+    public void Moverse(){
+        fuel=fuel-0.5;
+    }
+    
+    public double getFuel(){
+        return fuel;
     }
 }
