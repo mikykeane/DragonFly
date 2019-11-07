@@ -65,7 +65,7 @@ public class Gonio {
         double distancia;
         //Distancia minima y hacia donde nos deberemos mover
         double distanciaMinima=360;
-        String movimiento="moveN";//Por defecto nos moveremos al norte
+        String movimiento="moveS";//Por defecto nos moveremos al norte
         
         //Vamos a comparar la dirección del objetivo con las direcciones a las que nos podemos mover
         //para encontrar la más cercana
