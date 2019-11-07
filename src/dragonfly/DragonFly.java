@@ -31,8 +31,9 @@ public class DragonFly extends SingleAgent{
     
     String myDirection;
     
-    //Posibles estados del agente:
+    int logoutTemporal = 0;
     
+    //Posibles estados del agente:
     private final int NOLOG=0, LOGIN=1, THINKING=2, LISTENING=3, END=4;
     
     
@@ -129,9 +130,11 @@ public class DragonFly extends SingleAgent{
                 case THINKING:
                     think();
                     move();
+                    break;
                 case END:
                     logout();
                     end=true;
+                    break;
             }
             
         }
@@ -189,6 +192,7 @@ public class DragonFly extends SingleAgent{
      }
      
      public void move(){
+       logoutTemporal++;
         JsonObject parser = new JsonObject();
         try{
             parser.add("command", myDirection);
@@ -201,6 +205,11 @@ public class DragonFly extends SingleAgent{
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
         System.out.println(outbox);
+        
+        //Cuando de 10 pasos, que se deslogee
+        if(logoutTemporal>10){
+            logout();
+        }
      }
 
     
@@ -266,6 +275,7 @@ public class DragonFly extends SingleAgent{
                 }
                                
                 break;
+                //CREO QUE CRASH NO DEBERIA ESTAR EN LAS RESPUESTAS DE result
             case "CRASHED":
                 state=END;
                 System.err.println("El agente "+ this.getName()+ " se ha estrellado. Misión fracasada. Mejore la heurística");
