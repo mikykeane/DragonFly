@@ -6,7 +6,6 @@
 package dragonfly;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
@@ -25,13 +24,11 @@ public class DragonFly extends SingleAgent{
     // Clases que usará el Agente. NOTA/ TODO: Posiblemente faltan clases, Magnetic, Gonio, etc... Id añadiendolas
     Fuel myFuel;
     GPS myGPS;
-    Scanner myRadar;
+    Scanner myScanner;
     Knowledge myKnowledge;
     Gonio myGonio;
     
     String myDirection;
-    
-    int logoutTemporal = 0;
     
     //Posibles estados del agente:
     private final int NOLOG=0, LOGIN=1, THINKING=2, LISTENING=3, END=4;
@@ -40,7 +37,8 @@ public class DragonFly extends SingleAgent{
     
     private ACLMessage inbox, outbox; 
     
-    private boolean end; 
+    private boolean end;     
+    private boolean isGoal=false;
     private int state;
     private String myMap;
     private String action; 
@@ -72,6 +70,7 @@ public class DragonFly extends SingleAgent{
      * @param map mapa que se va a ejecutar
      * @param virtualhost Recibirá los mensajes ACL del servidor 
      * @param user 
+     * @param pass 
      * @throws java.lang.Exception 
      * 
      * 
@@ -96,8 +95,9 @@ public class DragonFly extends SingleAgent{
     public void init(){
         myFuel = new Fuel();
         myGPS = new GPS();
-        myRadar = new Scanner();
+        myScanner = new Scanner();
         myKnowledge = new Knowledge();
+        myGonio = new Gonio();
         inbox=null;
         outbox=null; 
         state=NOLOG;
@@ -123,13 +123,14 @@ public class DragonFly extends SingleAgent{
                     state=LOGIN;
                     break;
                 case LOGIN:
-                    System.out.println("Agent "+this.getName()+" is waiting for login response");
-                    
+                    System.out.println("Agent "+this.getName()+" is waiting for login response"); 
                     receiveMessage();
                     break;
                 case THINKING:
+                    receiveMessage();
                     think();
-                    move();
+                    if (end==false)
+                        move();
                     break;
                 case END:
                     logout();
@@ -192,7 +193,6 @@ public class DragonFly extends SingleAgent{
      }
      
      public void move(){
-       logoutTemporal++;
         JsonObject parser = new JsonObject();
         try{
             parser.add("command", myDirection);
@@ -205,11 +205,6 @@ public class DragonFly extends SingleAgent{
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
         System.out.println(outbox);
-        
-        //Cuando de 10 pasos, que se deslogee
-        if(logoutTemporal>10){
-            logout();
-        }
      }
 
     
@@ -234,7 +229,7 @@ public class DragonFly extends SingleAgent{
                 myGonio.GonioParser(parser);
             }//Si es radar,magnetic o elevatio, lo gestionamos en scanner
             else if (parser.get("radar")!= null || parser.get("magnetic")!= null || parser.get("elevation")!= null){
-                myRadar.ScannerParser(parser);
+                myScanner.ScannerParser(parser);
             }//En el caso de que sea GPS, lo gestionamos en GPS
              else if(parser.get("gps") != null) {
                 myGPS.GPSParser(parser);
@@ -243,7 +238,7 @@ public class DragonFly extends SingleAgent{
                 myFuel.FuelParser(parser);
             }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
              else if(parser.get("goal") != null) {
-                myFuel.FuelParser(parser);
+                goalParser(parser);
             }//En el caso de que sea status, 
              else if(parser.get("status") != null) {
                 myFuel.FuelParser(parser);
@@ -255,7 +250,11 @@ public class DragonFly extends SingleAgent{
         }
     }
 
-    
+     public void goalParser(JsonObject parser){
+        String goal=parser.get("goal").asString();
+        //Comprobamos si goal es true
+        isGoal = "true".equals(goal);
+    }
     /**
     * Método para gestionar los resultado en JSON del servidor
     * 
@@ -299,7 +298,12 @@ public class DragonFly extends SingleAgent{
     
     private void think(){
         
-        myDirection="moveNW";
+     // if (isGoal){
+       //     state=END;
+        //}
+       // else{
+            myDirection=myGonio.objetivo();
+        //}
         
     }
     

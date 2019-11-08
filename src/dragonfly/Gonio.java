@@ -7,6 +7,7 @@ package dragonfly;
 
 import com.eclipsesource.json.JsonObject;
 import java.util.HashMap;
+
 /**
  *
  * Clase que gestiona la distancia y la dirección a la que se encuentra el objetivo
@@ -14,30 +15,34 @@ import java.util.HashMap;
  */
 public class Gonio {
     //Distancia a la casilla objetivo en numero de celdas
-    int distance; 
+    double distance; 
     //Posicion de la casilla objetivo en angulos
     double angle; 
     //Aqui guardaremos los datos de los angulos
     HashMap<Integer, String> angulos;   
     String move;
-        /**
+    
+    /**
      * @author María del Mar García Cabello
      * @param object
      */
     public void GonioParser(JsonObject object){
            
         //Obtenemos la distancia en numero de celdas al objetivo 
-        distance= object.get("distance").asObject().asInt();
+        distance= object.get("distance").asObject().asDouble();
+        System.out.println("La distancia es ");
+        System.out.println(distance);
         //Obtenemos la dirección al que está el objetivo(en angulos)
         angle = object.get("angle").asObject().asDouble(); 
-        
+
     }
     
     /**
      * @author María del Mar García Cabello
+     * @return move siguiente movimiento que tendremos que realizar
      *
      */
-    public void objetivo(){
+    public String objetivo(){
         angulos=new HashMap<>();
             //Rellenamos el vector con los grados de los angulos
            angulos.put(0,"moveN");
@@ -54,7 +59,7 @@ public class Gonio {
         double distancia;
         //Distancia minima y hacia donde nos deberemos mover
         double distanciaMinima=360;
-        String movimiento="Norte";//Por defecto nos moveremos al norte
+        String movimiento="moveS";//Por defecto nos moveremos al norte
         
         //Vamos a comparar la dirección del objetivo con las direcciones a las que nos podemos mover
         //para encontrar la más cercana
@@ -75,6 +80,9 @@ public class Gonio {
                 
         } 
        move=movimiento; 
+       System.out.println(move);
+       return move;
     }
-       
+      
+    
 }
