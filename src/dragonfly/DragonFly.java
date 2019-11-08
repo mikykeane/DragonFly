@@ -298,12 +298,12 @@ public class DragonFly extends SingleAgent{
     
     private void think(){
         
-      if (isGoal){
-            state=END;
-        }
-        else{
+     // if (isGoal){
+       //     state=END;
+        //}
+       // else{
             myDirection=myGonio.objetivo();
-        }
+        //}
         
     }
     
