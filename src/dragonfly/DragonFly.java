@@ -114,7 +114,7 @@ public class DragonFly extends SingleAgent{
      */
     @Override
     public void execute(){
-        JsonObject parser = new JsonObject();
+       // JsonObject parser = new JsonObject();
         
         while(!end){
             switch(state){
@@ -139,8 +139,7 @@ public class DragonFly extends SingleAgent{
             }
             
         }
-        
-        
+              
     }
    
    
@@ -189,6 +188,7 @@ public class DragonFly extends SingleAgent{
         outbox.setSender(this.getAid());
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
+        this.send(outbox);
         System.out.println(outbox);
      }
      
@@ -204,6 +204,7 @@ public class DragonFly extends SingleAgent{
         outbox.setSender(this.getAid());
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
+        this.send(outbox);
         System.out.println(outbox);
      }
 
@@ -225,26 +226,25 @@ public class DragonFly extends SingleAgent{
             if (parser.get("result") != null){
                 resultManagement(parser);
             }//En el caso de que sea gonio, lo gestionamos en gonio
-            else if(parser.get("gonio") != null) {
+            if(parser.get("gonio") != null) {
                 myGonio.GonioParser(parser);
             }//Si es radar,magnetic o elevatio, lo gestionamos en scanner
-            else if (parser.get("radar")!= null || parser.get("magnetic")!= null || parser.get("elevation")!= null){
+            if (parser.get("radar")!= null || parser.get("magnetic")!= null || parser.get("elevation")!= null){
                 myScanner.ScannerParser(parser);
             }//En el caso de que sea GPS, lo gestionamos en GPS
-             else if(parser.get("gps") != null) {
+            if(parser.get("gps") != null) {
                 myGPS.GPSParser(parser);
             }//En el caso de que sea Fuel, lo gestionamos en Fuel
-             else if(parser.get("fuel") != null) {
+            if(parser.get("fuel") != null) {
                 myFuel.FuelParser(parser);
             }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
-             else if(parser.get("goal") != null) {
+            if(parser.get("goal") != null) {
                 goalParser(parser);
             }//En el caso de que sea status, 
-             else if(parser.get("status") != null) {
+            if(parser.get("status") != null) {
                 myFuel.FuelParser(parser);
             }
-            
-            
+               
         } catch (InterruptedException ex) {
             Logger.getLogger(DragonFly.class.getName()).log(Level.SEVERE, null, ex);
         }
