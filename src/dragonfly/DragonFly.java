@@ -6,10 +6,15 @@
 package dragonfly;
 
 import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,21 +125,27 @@ public class DragonFly extends SingleAgent{
             switch(state){
                 case NOLOG:
                     login();
-                    state=LOGIN;
+                    //state=LOGIN;
                     break;
-                case LOGIN:
-                    System.out.println("Agent "+this.getName()+" is waiting for login response"); 
-                    receiveMessage();
-                    break;
+               //7 case LOGIN:
+                  //  System.out.println("Agent "+this.getName()+" is waiting for login response"); 
+                    //receiveMessage();
+                    //break;
                 case THINKING:
-                    receiveMessage();
+                    //receiveMessage();
                     think();
-                    if (end==false)
-                        move();
-                    break;
+                    //if (end==false)
+                       // move();
+                    //break;
+                case LISTENING:
+                    for(int i = 0; i < 2; i++){
+                        if (state != END)
+                            receiveMessage();
+                    }
+                break;
                 case END:
                     logout();
-                    end=true;
+                    //end=true;
                     break;
             }
             
@@ -148,8 +159,6 @@ public class DragonFly extends SingleAgent{
     * Método para hacer login con el servidor
     * 
     * @author Miguel Keane Cañizares
-     * @param user
-     * @param password
     * 
     */
     public void login(){
@@ -174,6 +183,8 @@ public class DragonFly extends SingleAgent{
         outbox.setContent(parser.toString());
         System.out.println(outbox);
         this.send(outbox);
+        System.out.println("Agent "+this.getName()+" is waiting for login response"); 
+        state=LISTENING;
     }
     
      public void logout(){
@@ -189,6 +200,7 @@ public class DragonFly extends SingleAgent{
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
         this.send(outbox);
+        state=LISTENING;
         System.out.println(outbox);
      }
      
@@ -206,6 +218,7 @@ public class DragonFly extends SingleAgent{
         outbox.setContent(parser.toString());
         this.send(outbox);
         System.out.println(outbox);
+        state=LISTENING;
      }
 
     
@@ -215,7 +228,7 @@ public class DragonFly extends SingleAgent{
     * @author Miguel Keane Cañizares, María del Mar García Cabello
     * 
     */
-    private void receiveMessage() {
+    private void receiveMessage() throws FileNotFoundException, IOException {
         try{
             //Recivimos un mensaje del servidor
             inbox= receiveACLMessage();
@@ -225,35 +238,47 @@ public class DragonFly extends SingleAgent{
             //Si es resultado, vamos a comprobar el estado en resultManagement
             if (parser.get("result") != null){
                 resultManagement(parser);
-            }//En el caso de que sea gonio, lo gestionamos en gonio
-            if(parser.get("gonio") != null) {
-                myGonio.GonioParser(parser);
-            }//Si es radar,magnetic o elevatio, lo gestionamos en scanner
-            if (parser.get("radar")!= null || parser.get("magnetic")!= null || parser.get("elevation")!= null){
-                myScanner.ScannerParser(parser);
-            }//En el caso de que sea GPS, lo gestionamos en GPS
-            if(parser.get("gps") != null) {
-                myGPS.GPSParser(parser);
-            }//En el caso de que sea Fuel, lo gestionamos en Fuel
-            if(parser.get("fuel") != null) {
-                myFuel.FuelParser(parser);
-            }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
-            if(parser.get("goal") != null) {
-                goalParser(parser);
-            }//En el caso de que sea status, 
-            if(parser.get("status") != null) {
-                myFuel.FuelParser(parser);
-            }
+            }else if (parser.get("perceptions") != null){
+                state=THINKING;
+                    myGonio.GonioParser(parser);
+                //Si es radar,magnetic o elevatio, lo gestionamos en scanner
+               
+                    myScanner.ScannerParser(parser);
+                //En el caso de que sea GPS, lo gestionamos en GPS
+                if(parser.get("gps") != null) {
+                    myGPS.GPSParser(parser);
+                }//En el caso de que sea Fuel, lo gestionamos en Fuel
+                if(parser.get("fuel") != null) {
+                    myFuel.FuelParser(parser);
+                }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
+                
+                    goalParser(parser);
+                //En el caso de que sea status, 
+                if(parser.get("status") != null) {
+                    myFuel.FuelParser(parser);
+                }
+
+            }if (parser.get("trace")!=null){
+                System.out.println("Recibiendo traza");
+                JsonArray ja = parser.get("trace").asArray();
+                byte data[] = new byte [ja.size()];
+                for(int i=0; i<data.length; i++){
+                    data[i] = (byte) ja.get(i).asInt();
+                }
+                FileOutputStream fos = new FileOutputStream("mapa3.png");
+                fos.write(data);
+                fos.close();
+                System.out.println("Traza Guardada");
+                end=true;
+            }        
                
         } catch (InterruptedException ex) {
             Logger.getLogger(DragonFly.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-     public void goalParser(JsonObject parser){
-        String goal=parser.get("goal").asString();
-        //Comprobamos si goal es true
-        isGoal = "true".equals(goal);
+    public void goalParser(JsonObject parser){
+        isGoal =parser.get("perceptions").asObject().get("goal").asBoolean();    
     }
     /**
     * Método para gestionar los resultado en JSON del servidor
@@ -298,13 +323,149 @@ public class DragonFly extends SingleAgent{
     
     private void think(){
         
-     // if (isGoal){
-       //     state=END;
-        //}
-       // else{
-            myDirection=myGonio.objetivo();
-        //}
+    if (myScanner.magnetic[5][5]==1){
+         if (myScanner.elevation[5][5]>0){
+             myDirection="moveDW";
+            move();
+         }else
+            state=END;
+        }else{
+            
+            HashMap<Integer, String> angulos;
+            // Decidimos ángulo
+             angulos=new HashMap<>();
+            //Rellenamos el vector con los grados de los angulos
+           angulos.put(0,"moveN");
+           angulos.put(45,"moveNE");
+           angulos.put(90,"moveE");
+           angulos.put(135,"moveSE");
+           angulos.put(180,"moveS");
+           angulos.put(225,"moveSW");
+           angulos.put(270,"moveW");
+           angulos.put(315,"moveNW");
+    
+        double anguloActual;
+        //Distancia que hay entre el objetivo y cada uno de los angulos de movimiento posibles
+        double distancia;
+        //Distancia minima y hacia donde nos deberemos mover
+        double distanciaMinima=360;
+        String movimiento="moveN";//Por defecto nos moveremos al norte
         
+        //Vamos a comparar la dirección del objetivo con las direcciones a las que nos podemos mover
+        //para encontrar la más cercana
+        
+        //Recorremos el hasMap
+        for(int i : angulos.keySet()) {
+            //vemos que angulo nos conviene mas
+            anguloActual = Math.abs(myGonio.angle-i)%360; 
+            if(anguloActual>180){
+                distancia=360-anguloActual;
+            }else distancia=anguloActual;
+            
+            //Nos quedamos con la distancia mas pequeña
+            if(distanciaMinima>distancia && casillaDisponible(angulos.get(i))) {
+                distanciaMinima=distancia;
+                movimiento=angulos.get(i);
+            }
+                
+        } 
+        System.out.println("Quiere ir a: " + movimiento);
+        if (alturaPosible(movimiento)){
+            myDirection=movimiento;
+        }else{
+            myDirection="moveUP";
+        }
+         
+        System.out.println(myDirection);
+       
+        
+        //Realizamos el movimiento
+        move();
+        }  
+        
+    }
+    
+     public boolean casillaDisponible(String dir){
+        boolean disponible=true;
+        if (null != dir)switch (dir) {
+            case "moveN":
+                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>170)
+                    disponible=false;
+                break;
+            case "moveNW":
+                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>170)
+                    disponible=false;
+                break;
+            case "moveNE":
+                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>170)
+                    disponible=false;
+                break;
+            case "moveE":
+                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>170)
+                    disponible=false;
+                break;
+            case "moveSE":
+                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>170)
+                    disponible=false;
+                break;
+            case "moveS":
+                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>170)
+                    disponible=false;
+                break;
+            case "moveSW":
+                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>170)
+                    disponible=false;
+                break;
+            case "moveW":
+                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
+                    disponible=false;
+                break;
+            default:
+                break;
+        }
+        return disponible;
+    }
+    
+    
+     public boolean alturaPosible(String dir){
+        boolean posible=true;
+        if (null != dir)switch (dir) {
+            case "moveN":
+                if (myScanner.elevation[4][5] < 0)
+                    posible=false;
+                break;
+            case "moveNW":
+                if (myScanner.elevation[4][4] < 0)
+                    posible=false;
+                break;
+            case "moveNE":
+                if (myScanner.elevation[4][6] < 0)
+                    posible=false;
+                break;
+            case "moveE":
+                if (myScanner.elevation[5][6] < 0)
+                    posible=false;
+                break;
+            case "moveSE":
+                if (myScanner.elevation[6][6] < 0)
+                    posible=false;
+                break;
+            case "moveS":
+                if (myScanner.elevation[6][5] < 0)
+                    posible=false;
+                break;
+            case "moveSW":
+                if (myScanner.elevation[6][4] < 0)
+                    posible=false;
+                break;
+            case "moveW":
+                if (myScanner.elevation[5][4] < 0)
+                    posible=false;
+                break;
+            default:
+                break;
+        }
+        return posible;
     }
     
 }
