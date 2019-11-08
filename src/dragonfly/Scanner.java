@@ -15,9 +15,9 @@ import com.eclipsesource.json.JsonValue;
  */
 public class Scanner {
     
-    int radar[][]; // Tenemos que decidir como vamos a escánear los resultados. Falta mirar un poco mejor los guiones. 
-    int magnetic[][];
-    int elevation[][];
+    int radar[][] = new int[11][11]; // Tenemos que decidir como vamos a escánear los resultados. Falta mirar un poco mejor los guiones. 
+    int magnetic[][]=new int[11][11];
+    int elevation[][]=new int[11][11];
     /**
      * @author Miguel Keane 
      * @param object
@@ -26,12 +26,8 @@ public class Scanner {
     {
         //Parseamos los datos de JSON
         radarParser(object);
-        if (object.get("magnetic")!= null){ //¿Por que comprobamos si esta nulo? Si manda radar manda todos, creo
-            magneticParser(object);
-        }
-        if (object.get("elevation")!= null){
-            elevationParser(object);
-        }       
+        magneticParser(object);
+        elevationParser(object);       
         
     }
     /**
@@ -39,10 +35,10 @@ public class Scanner {
      * @param object
      */
     private void radarParser(JsonObject object){
-        JsonArray toParse = object.get("radar").asArray();
+        JsonArray toParse = object.get("perceptions").asObject().get("radar").asArray();
         for (int i=0; i<11; i++){
             for(int j=0; j<11; j++){
-                radar[i][j]= toParse.get(j+i).asInt();
+                radar[i][j]= toParse.get(i*11+j).asInt();
             }
         }
     }
@@ -51,10 +47,10 @@ public class Scanner {
      * @param object
      */
     private void magneticParser(JsonObject object){
-        JsonArray toParse = object.get("magnetic").asArray();
+        JsonArray toParse = object.get("perceptions").asObject().get("magnetic").asArray();
         for (int i=0; i<11; i++){
             for(int j=0; j<11; j++){
-                magnetic[i][j]= toParse.get(j+i).asInt();
+                magnetic[i][j]= toParse.get(j+i*11).asInt();
             }
         }
     }
@@ -63,10 +59,10 @@ public class Scanner {
      * @param object
      */  
     private void elevationParser(JsonObject object){
-        JsonArray toParse = object.get("elevation").asArray();
+        JsonArray toParse = object.get("perceptions").asObject().get("elevation").asArray();
         for (int i=0; i<11; i++){
             for(int j=0; j<11; j++){
-                elevation[i][j]= toParse.get(j+i).asInt();
+                elevation[i][j]= toParse.get(i*11+j).asInt();
             }
         }
     }
