@@ -21,7 +21,7 @@ public class Fuel {
     public void FuelParser(JsonObject object)
     {
         //Parseamos los datos de JSON
-        String aux;
+       //String aux;
         //Obtenemos la cantidad de fuel que nos queda
         fuel= object.get("perceptions").asObject().get("fuel").asDouble();
         //fuel = Double.parseDouble(aux);

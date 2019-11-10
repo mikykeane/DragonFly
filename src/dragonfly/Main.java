@@ -43,23 +43,22 @@ public class Main{
         Scanner parser = new Scanner(inputFile);
         
         ////////////////////////////////////////////////////////////////////
-        // NO HACER PUSH. DATOS PRIVADOS. METERLOS EN .gitignore después del primer push
-        String virtualhost = parser.nextLine();
-        String username = parser.nextLine(); 
-        String pass = parser.nextLine(); 
+        //DATOS PRIVADOS.
+        String virtualhost = parser.nextLine(); //Nombre del host
+        String username = parser.nextLine(); //Nombre del grupo
+        String pass = parser.nextLine();  //Contraseña del grupo
         //////////////////////////////////////////////////////////////////////
         System.out.println(virtualhost);
         System.out.println(username);
         System.out.println(pass);
-        String map = "map9"; 
+        String map = "map4"; //Mapa que queremos que nuestro agente realice
 
-
+        //Conectamos con el servidor
         AgentsConnection.connect("isg2.ugr.es",6000, virtualhost, username, pass, false);
         
 
-        try {                
-                dragonFly = new DragonFly(new AgentID("Dron123456"), map, virtualhost, username, pass);
-           
+        try {   //Creamos nuestro agente             
+                dragonFly = new DragonFly(new AgentID("Dron1"), map, virtualhost, username, pass);
                 dragonFly.start();
                 
         } catch (Exception ex) {

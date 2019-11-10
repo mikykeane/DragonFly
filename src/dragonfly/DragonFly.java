@@ -11,7 +11,7 @@ import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,10 +43,10 @@ public class DragonFly extends SingleAgent{
     private ACLMessage inbox, outbox; 
     
     private boolean end;     
-    private boolean isGoal=false;
+    //private boolean isGoal=false;
     private int state;
     private String myMap;
-    private String action; 
+    //private String action; 
     
     private String myUser;
     private String myPass; 
@@ -257,11 +257,11 @@ public class DragonFly extends SingleAgent{
                 myFuel.FuelParser(parser);
                 //En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
                 
-                    goalParser(parser);
+                //    goalParser(parser);
                 //En el caso de que sea status, 
-                if(parser.get("status") != null) {
+               /* if(parser.get("status") != null) {
                     myFuel.FuelParser(parser);
-                }
+                }*/
 
             }if (parser.get("trace")!=null){
                 System.out.println("Recibiendo traza");
@@ -282,9 +282,9 @@ public class DragonFly extends SingleAgent{
         }
     }
 
-    public void goalParser(JsonObject parser){
+  /*  public void goalParser(JsonObject parser){
         isGoal =parser.get("perceptions").asObject().get("goal").asBoolean();    
-    }
+    }*/
     /**
     * Método para gestionar los resultado en JSON del servidor
     * 
