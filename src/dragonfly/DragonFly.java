@@ -147,7 +147,7 @@ public class DragonFly extends SingleAgent{
                 break;
                 case END:
                     logout();
-                    end=true;
+                   // end=true;
                     break;
             }
             
