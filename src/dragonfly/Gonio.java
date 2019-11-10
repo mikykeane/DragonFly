@@ -29,11 +29,11 @@ public class Gonio {
     public void GonioParser(JsonObject object){
            
         //Obtenemos la distancia en numero de celdas al objetivo 
-        distance= object.get("distance").asObject().asDouble();
+        distance= object.get("perceptions").asObject().get("gonio").asObject().get("distance").asDouble();
         System.out.println("La distancia es ");
         System.out.println(distance);
         //Obtenemos la dirección al que está el objetivo(en angulos)
-        angle = object.get("angle").asObject().asDouble(); 
+        angle = object.get("perceptions").asObject().get("gonio").asObject().get("angle").asDouble(); 
 
     }
     
