@@ -418,11 +418,12 @@ public class DragonFly extends SingleAgent{
         angulos.put(225,"moveSW");
         angulos.put(270,"moveW");
         angulos.put(315,"moveNW");
-    
-        double anguloActual;
+        
         //Distancia que hay entre el objetivo y cada uno de los angulos de movimiento posibles
-        double distancia;
+        double anguloActual;
         //Distancia minima y hacia donde nos deberemos mover
+        double distancia;
+        //Para hacer la comparación, necesitamos que el de comparar sea el angulo mayor
         double distanciaMinima=360;
         String movimiento="moveN";//Por defecto nos moveremos al norte
         
@@ -457,7 +458,15 @@ public class DragonFly extends SingleAgent{
         return movimiento; 
      }
      
-     public boolean iWasHereBefore(String dir){
+    
+    /**
+    * Método para saber si hemos pasado ya por una celda
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return iWas 
+    * 
+    */ 
+    public boolean iWasHereBefore(String dir){
          boolean iWas = false;
          if (null != dir)switch (dir) {
             case "moveN":
@@ -506,6 +515,15 @@ public class DragonFly extends SingleAgent{
          return iWas;
      }
      
+    
+    
+    /**
+    * Método para obtener el angulo contrario
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return opdir 
+    * 
+    */
     public String oppositeAngle(String dir){
         String opdir= new String(); 
         if (null != dir)switch (dir) {
@@ -539,7 +557,15 @@ public class DragonFly extends SingleAgent{
         return opdir;
     }
     
-     public boolean alturaPosible(String dir){
+    
+    /**
+    * Método para saber si podemos ir a una dirección sin estrellarnos
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return posible 
+    * 
+    */
+    public boolean alturaPosible(String dir){
         boolean posible=true;
         if (null != dir)switch (dir) {
             case "moveN":
