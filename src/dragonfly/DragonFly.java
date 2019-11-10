@@ -11,7 +11,6 @@ import com.eclipsesource.json.JsonObject;
 import es.upv.dsic.gti_ia.core.ACLMessage;
 import es.upv.dsic.gti_ia.core.AgentID;
 import es.upv.dsic.gti_ia.core.SingleAgent;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,14 +18,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Clase principal del Agente DragonFly. Aquí estará especificada la heurística y hará uso de las demás clases para desenvolverse y alcanzar su objetivo
- * 
- *
+ * Clase principal del Agente DragonFly. Aquí estará especificada la heurística y hará uso de las demás clases para desenvolverse y alcanzar su objetivo *
  * @author Miguel Keane
+ * 
  */
 public class DragonFly extends SingleAgent{
 
-    // Clases que usará el Agente. NOTA/ TODO: Posiblemente faltan clases, Magnetic, Gonio, etc... Id añadiendolas
+    // Clases que usará el Agente
     Fuel myFuel;
     GPS myGPS;
     Scanner myScanner;
@@ -35,28 +33,25 @@ public class DragonFly extends SingleAgent{
     
     String myDirection;
     
-    //Posibles estados del agente:
+    //Estados del agente:
     private final int NOLOG=0, LOGIN=1, THINKING=2, LISTENING=3, END=4;
     
+    private ACLMessage inbox, outbox; //para comunicarnos con el servidor
+    private String key; //Clave
+    private AgentID myServer; //Nombre de nuestro agente
     
-    
-    private ACLMessage inbox, outbox; 
-    
-    private boolean end;     
-    private boolean isGoal=false;
+    private boolean end;
     private int state;
-    private String myMap;
-    private String action; 
+    private String myMap; //Mapa en el que estamos
     
-    private String myUser;
-    private String myPass; 
-    
-    private String key;
-    private AgentID myServer;
+    private String myUser; //Usuario del grupo
+    private String myPass; //Contraseña del grupo
+
+    private String previousMove; //Movimiento anterior
     
 
     /**
-     *
+     * @author Miguel Keane
      * @param aid
      * @throws Exception
      */
@@ -87,13 +82,13 @@ public class DragonFly extends SingleAgent{
         
         myUser=user;
         myPass=pass;
-        myKnowledge = new Knowledge(myMap);  // Hay que decidir cómo vamos a hacer la memoria. Sabéis trabajar CSV en java? yo lo he usado en Python, pero podría ser una buena solución, de esa forma inicializamos el mapa X, lo cargamos y tenemos ya guardada la información de anteriores ejecuciones. 
+        myKnowledge = new Knowledge(myMap);
         
     }
     
     /**
      * @author Miguel Keane
-     * 
+     * Inicializa todas las variables
      * 
      */
     @Override
@@ -115,44 +110,32 @@ public class DragonFly extends SingleAgent{
     /**
      * Método para gestionar los posibles estados del agente, indicando que debe hacer en cada etapa.
      * 
-     * @author Miguel Keane Cañizares y Mar Garcia Cabello
+     * @author Miguel Keane Cañizares y Maria del Mar Garcia Cabello
      */
     @Override
     public void execute(){
-       // JsonObject parser = new JsonObject();
-        
+        //Mientras no termine el agente
         while(!end){
-            switch(state){
-                case NOLOG:
-                    login();
-                    //state=LOGIN;
+            switch(state){ //Podemos estar en diferentes estados
+                case NOLOG: //No hemos hecho log aun
+                    login(); //Nos logueamos
                     break;
-               //7 case LOGIN:
-                  //  System.out.println("Agent "+this.getName()+" is waiting for login response"); 
-                    //receiveMessage();
-                    //break;
-                case THINKING:
-                    //receiveMessage();
-                    think();
-                    //if (end==false)
-                       // move();
-                    //break;
-                case LISTENING:
+                case THINKING://Pensando
+                    think(); //Pensamos el siguiente movimiento o cosa que tiene que realizar el agente
+                case LISTENING: //EScuchando mensajes del servidor
                     for(int i = 0; i < 2; i++){
                         if (state != END)
-                            receiveMessage();
+                            receiveMessage(); //Escuchamos el mensaje del servidor
                     }
                 break;
-                case END:
-                    logout();
-                    //end=true;
+                case END://Hemos terminado
+                    logout(); //Nos deslogueamos
+                    end=true;
                     break;
             }
-            
         }
               
     }
-   
    
     
     /**
@@ -182,11 +165,17 @@ public class DragonFly extends SingleAgent{
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
         System.out.println(outbox);
-        this.send(outbox);
+        this.send(outbox); //Hacemos el envio de la info de login al servidor
         System.out.println("Agent "+this.getName()+" is waiting for login response"); 
-        state=LISTENING;
+        state=LISTENING;//Una vez que ya nos hemos logueado, podemos escuchar los mensajes del servidor
     }
     
+    /**
+    * Método para hacer logout con el servidor
+    * 
+    * @author Miguel Keane Cañizares, María del Mar García Cabello
+    * 
+    */
      public void logout(){
         JsonObject parser = new JsonObject();
         try{
@@ -200,10 +189,17 @@ public class DragonFly extends SingleAgent{
         outbox.setReceiver(myServer);
         outbox.setContent(parser.toString());
         this.send(outbox);
-        state=LISTENING;
+        state=LISTENING;//Mantenemos el estado a escuando para que nos llegue el mensaje de que se ha deslogueado correctamente.
         System.out.println(outbox);
      }
      
+     
+    /**
+    * Método para hacer que el agente se mueva por el mapa
+    * 
+    * @author Miguel Keane Cañizares
+    * 
+    */
      public void move(){
         JsonObject parser = new JsonObject();
         try{
@@ -219,6 +215,7 @@ public class DragonFly extends SingleAgent{
         this.send(outbox);
         System.out.println(outbox);
         state=LISTENING;
+        
      }
 
     
@@ -235,41 +232,37 @@ public class DragonFly extends SingleAgent{
             //Lo pasamos a un JSon para poder trabajar con el
             JsonObject parser = Json.parse(inbox.getContent()).asObject();
             
+            
             //Si es resultado, vamos a comprobar el estado en resultManagement
             if (parser.get("result") != null){
+                System.out.println(inbox.getContent());
                 resultManagement(parser);
-            }else if (parser.get("perceptions") != null){
+            }else if (parser.get("perceptions") != null){ //Si ya tenemos las percepciones, es hora de pensar.
                 state=THINKING;
-                    myGonio.GonioParser(parser);
-                //Si es radar,magnetic o elevatio, lo gestionamos en scanner
-               
-                    myScanner.ScannerParser(parser);
-                //En el caso de que sea GPS, lo gestionamos en GPS
-                if(parser.get("gps") != null) {
-                    myGPS.GPSParser(parser);
-                }//En el caso de que sea Fuel, lo gestionamos en Fuel
-                if(parser.get("fuel") != null) {
-                    myFuel.FuelParser(parser);
-                }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
-                
-                    goalParser(parser);
-                //En el caso de que sea status, 
-                if(parser.get("status") != null) {
-                    myFuel.FuelParser(parser);
-                }
-
-            }if (parser.get("trace")!=null){
+                //Parseamos datos de Gonio
+                myGonio.GonioParser(parser);
+               //Parseamos los datos del scanner
+                myScanner.ScannerParser(parser);
+                //Parseamos los datos del GPS
+                myGPS.GPSParser(parser);
+                //Parseamos los datos del fuel
+                myFuel.FuelParser(parser);
+            }
+            //Si en el mensaje vienen los datos de la traza
+            if (parser.get("trace")!=null){
                 System.out.println("Recibiendo traza");
+                //Parseamos los datos de la traza
                 JsonArray ja = parser.get("trace").asArray();
                 byte data[] = new byte [ja.size()];
                 for(int i=0; i<data.length; i++){
                     data[i] = (byte) ja.get(i).asInt();
                 }
-                FileOutputStream fos = new FileOutputStream("mapa3.png");
+                //Los guardamos en una imagen
+                FileOutputStream fos = new FileOutputStream(myMap+".png");
                 fos.write(data);
                 fos.close();
                 System.out.println("Traza Guardada");
-                end=true;
+                end=true; //Ya hemos terminado con este mapa
             }        
                
         } catch (InterruptedException | IOException ex) {
@@ -277,9 +270,6 @@ public class DragonFly extends SingleAgent{
         }
     }
 
-    public void goalParser(JsonObject parser){
-        isGoal =parser.get("perceptions").asObject().get("goal").asBoolean();    
-    }
     /**
     * Método para gestionar los resultado en JSON del servidor
     * 
@@ -289,65 +279,151 @@ public class DragonFly extends SingleAgent{
     */
     private void resultManagement(JsonObject parser)
     {
-        String result= parser.get("result").asString().toUpperCase();
-        switch (result){
+        String result= parser.get("result").asString().toUpperCase();//Parseamos los datos
+        switch (result){ //Comprobamos el mensaje
             case "OK":
                 if (parser.get("in-reply-to").asString().equals("login")){
                     state=THINKING;
                     key=parser.get("key").asString();
                     System.out.println("Recibido OK a login");
-                }
-                               
+                }              
                 break;
-                //CREO QUE CRASH NO DEBERIA ESTAR EN LAS RESPUESTAS DE result
             case "CRASHED":
                 state=END;
                 System.err.println("El agente "+ this.getName()+ " se ha estrellado. Misión fracasada. Mejore la heurística");
                 break;
-            case "BAD_COMMAND":
+            case "BAD COMMAND":
                 state=END;
                 System.err.println("Error: Accion no reconocida");
                 break;
-            case "BAD_KEY":
+            case "BAD KEY":
                 state=END;
                 System.err.println("Error: La llave introducida es incorrecta.");
                 break;
-            case "BAD_MAP":
+            case "BAD MAP":
                 state=END;
                 System.err.println("Error: El mapa introducido no es válido. Corrija. ");
-                break;
-               
+                break;       
         }
     }
     
     
+    /**
+    * Método para pensar el siguiente movimiento del agente
+    * 
+    * @author Miguel Keane Cañizares
+    * 
+    */
     private void think(){
-        
-    if (myScanner.magnetic[5][5]==1){
-         if (myScanner.elevation[5][5]>0){
-             myDirection="moveDW";
-            move();
-         }else
-            state=END;
-        }else{
+        if (myFuel.getFuel() <=10){//Si tenemos poco combustible
+            if (myScanner.elevation[5][5]>0){ //Si no estamos en el suelo, bajamos
+                myDirection="moveDW";
+                move();
+            }else {
+                myDirection="refuel";//Si estamos en el suelo cargamos combustible
+                move();
+                System.out.println("Hacemos refuel, por que quedaba: " + myFuel.getFuel());
+            }
+        }else if (myScanner.magnetic[5][5]==1){ //Si estamos en una celda objetivo
+            if (myScanner.elevation[5][5]>0){ //Y no estamos en el suelo, bajamos
+                myDirection="moveDW";
+                move();
+            }else //Si estamos en el suelo, hemos terminado
+                state=END;
+        }else{//Si no estamos en una celda objetivo
+        String movimiento; 
+        movimiento = decideAngle(); //Decidimos donde tenemos que ir en el sigiente movimiento
+        System.out.println("Quiere ir a: " + movimiento);
+        if (alturaPosible(movimiento)){ //Si es posible movernos a esa celda porque la altura es la adecuada
+            myDirection=movimiento; //Nos movemos a esa celda
+        }else if (myScanner.radar[5][5]<180){ //Si no es posible
+            myDirection="moveUP"; //Subimos
+        }
+
+        System.out.println("Finalmente se mueve a: " + myDirection);
+
+        previousMove=myDirection;
+        //Realizamos el movimiento
+        move();
             
-            HashMap<Integer, String> angulos;
-            // Decidimos ángulo
-             angulos=new HashMap<>();
-            //Rellenamos el vector con los grados de los angulos
-           angulos.put(0,"moveN");
-           angulos.put(45,"moveNE");
-           angulos.put(90,"moveE");
-           angulos.put(135,"moveSE");
-           angulos.put(180,"moveS");
-           angulos.put(225,"moveSW");
-           angulos.put(270,"moveW");
-           angulos.put(315,"moveNW");
+        }  
+        
+    }
     
-        double anguloActual;
+    
+    /**
+    * Método para saber si es posible moverse a una casilla concreta
+    * @author Miguel Keane Cañizares
+    * @return disponible
+    * @param dir Dirección a la que nos gustaría movernos
+    * 
+    */
+    public boolean casillaDisponible(String dir){
+        boolean disponible=true;
+        if (null != dir)switch (dir) {
+            case "moveN":
+                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>180)
+                    disponible=false;
+                break;
+            case "moveNW":
+                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>180)
+                    disponible=false;
+                break;
+            case "moveNE":
+                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>180)
+                    disponible=false;
+                break;
+            case "moveE":
+                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>180)
+                    disponible=false;
+                break;
+            case "moveSE":
+                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>180)
+                    disponible=false;
+                break;
+            case "moveS":
+                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>180)
+                    disponible=false;
+                break;
+            case "moveSW":
+                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>180)
+                    disponible=false;
+                break;
+            case "moveW":
+                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
+                    disponible=false;
+                break;
+            default:
+                break;
+        }
+        return disponible;
+    }
+    
+    
+    /**
+    * Método para elegir el siguiente movimiento
+    * @author Miguel Keane Cañizares, María del Mar García Cabello
+    * @return movimiento Siguiente movimiento que debe realizar el agente
+    * 
+    */
+     public String decideAngle(){
+        HashMap<Integer, String> angulos=new HashMap<>();
+          
+        //Rellenamos el vector con los grados de los angulos
+        angulos.put(0,"moveN");
+        angulos.put(45,"moveNE");
+        angulos.put(90,"moveE");
+        angulos.put(135,"moveSE");
+        angulos.put(180,"moveS");
+        angulos.put(225,"moveSW");
+        angulos.put(270,"moveW");
+        angulos.put(315,"moveNW");
+        
         //Distancia que hay entre el objetivo y cada uno de los angulos de movimiento posibles
-        double distancia;
+        double anguloActual;
         //Distancia minima y hacia donde nos deberemos mover
+        double distancia;
+        //Para hacer la comparación, necesitamos que el de comparar sea el angulo mayor
         double distanciaMinima=360;
         String movimiento="moveN";//Por defecto nos moveremos al norte
         
@@ -362,72 +438,134 @@ public class DragonFly extends SingleAgent{
                 distancia=360-anguloActual;
             }else distancia=anguloActual;
             
-            //Nos quedamos con la distancia mas pequeña
-            if(distanciaMinima>distancia && casillaDisponible(angulos.get(i))) {
-                distanciaMinima=distancia;
-                movimiento=angulos.get(i);
+            if (previousMove == oppositeAngle(angulos.get(i))){
+                distancia += 180;
             }
+            
+            //Nos quedamos con la distancia mas pequeña
+            if (casillaDisponible(angulos.get(i))){
+                if (iWasHereBefore(angulos.get(i))){
+                    distancia += 360;
+                }
+                if(distanciaMinima>distancia) {
+                    distanciaMinima=distancia;
+                    movimiento=angulos.get(i);
+                }
+            }
+            
                 
         } 
-        System.out.println("Quiere ir a: " + movimiento);
-        if (alturaPosible(movimiento)){
-            myDirection=movimiento;
-        }else{
-            myDirection="moveUP";
-        }
-         
-        System.out.println(myDirection);
-       
-        
-        //Realizamos el movimiento
-        move();
-        }  
-        
-    }
+        return movimiento; 
+     }
+     
     
-     public boolean casillaDisponible(String dir){
-        boolean disponible=true;
-        if (null != dir)switch (dir) {
+    /**
+    * Método para saber si hemos pasado ya por una celda
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return iWas 
+    * 
+    */ 
+    public boolean iWasHereBefore(String dir){
+         boolean iWas = false;
+         if (null != dir)switch (dir) {
             case "moveN":
-                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>170)
-                    disponible=false;
+                if(myGPS.beenHere[myGPS.x-1][myGPS.y]){
+                    iWas=true;
+                }
                 break;
             case "moveNW":
-                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>170)
-                    disponible=false;
+                 if(myGPS.beenHere[myGPS.x-1][myGPS.y-1]){
+                    iWas=true;
+                }
                 break;
             case "moveNE":
-                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>170)
-                    disponible=false;
+                if(myGPS.beenHere[myGPS.x-1][myGPS.y+1]){
+                    iWas=true;
+                }
                 break;
             case "moveE":
-                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>170)
-                    disponible=false;
+                 if(myGPS.beenHere[myGPS.x][myGPS.y+1]){
+                    iWas=true;
+                }
                 break;
             case "moveSE":
-                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>170)
-                    disponible=false;
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y+1]){
+                    iWas=true;
+                }
                 break;
             case "moveS":
-                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>170)
-                    disponible=false;
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y]){
+                    iWas=true;
+                }
                 break;
             case "moveSW":
-                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>170)
-                    disponible=false;
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y-1]){
+                    iWas=true;
+                }
                 break;
             case "moveW":
-                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
-                    disponible=false;
+                if(myGPS.beenHere[myGPS.x][myGPS.y-1]){
+                    iWas=true;
+                }
                 break;
             default:
                 break;
         }
-        return disponible;
+         return iWas;
+     }
+     
+    
+    
+    /**
+    * Método para obtener el angulo contrario
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return opdir 
+    * 
+    */
+    public String oppositeAngle(String dir){
+        String opdir= new String(); 
+        if (null != dir)switch (dir) {
+            case "moveN":
+                opdir = "moveS";
+                break;
+            case "moveNW":
+                opdir = "moveSE";
+                break;
+            case "moveNE":
+               opdir = "moveSW";
+                break;
+            case "moveE":
+                opdir = "moveW";
+                break;
+            case "moveSE":
+                opdir = "moveNW";
+                break;
+            case "moveS":
+                opdir = "moveN";
+                break;
+            case "moveSW":
+                opdir = "moveNE";
+                break;
+            case "moveW":
+                opdir = "moveE";
+                break;
+            default:
+                break;
+        }
+        return opdir;
     }
     
     
-     public boolean alturaPosible(String dir){
+    /**
+    * Método para saber si podemos ir a una dirección sin estrellarnos
+    * @author Miguel Keane Cañizares
+    * @param dir
+    * @return posible 
+    * 
+    */
+    public boolean alturaPosible(String dir){
         boolean posible=true;
         if (null != dir)switch (dir) {
             case "moveN":

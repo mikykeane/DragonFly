@@ -15,18 +15,21 @@ public class GPS {
     int x;
     int y;
     int z;
-    
+    public boolean beenHere[][] = new boolean [1000][1000];
     /**
-     * @author María del Mar García Cabello
+     * @author María del Mar García Cabello y Miguel Keane
      * @param object
      */
     public void GPSParser(JsonObject object)
     {
         //Parseamos los datos de JSON 
         //Obtenemos la dirección en la que nos despertamos
-        x= object.get("x").asObject().asInt();
-        y= object.get("y").asObject().asInt();
-        z= object.get("z").asObject().asInt();
+        y= object.get("perceptions").asObject().get("gps").asObject().get("x").asInt();
+        x= object.get("perceptions").asObject().get("gps").asObject().get("y").asInt();
+        z= object.get("perceptions").asObject().get("gps").asObject().get("z").asInt();
+        
+        beenHere[x][y]=true; 
+        
         
     }
     
