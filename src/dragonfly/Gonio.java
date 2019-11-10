@@ -19,7 +19,8 @@ public class Gonio {
     //Posicion de la casilla objetivo en angulos
     double angle; 
     //Aqui guardaremos los datos de los angulos
-    HashMap<Integer, String> angulos;   
+    HashMap<Integer, String> angulos;  
+    //Hacia donde iremos en el siguiente movimiento
     String move;
     
     /**
