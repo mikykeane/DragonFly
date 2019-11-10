@@ -21,23 +21,24 @@ public class Fuel {
     public void FuelParser(JsonObject object)
     {
         //Parseamos los datos de JSON
-        
+        String aux;
         //Obtenemos la cantidad de fuel que nos queda
-        fuel= object.get("fuel").asObject().asDouble();
+        fuel= object.get("perceptions").asObject().get("fuel").asDouble();
+        //fuel = Double.parseDouble(aux);
     }
     
      /**
      *  @author María del Mar García Cabello
      *
      */
-    public void Recargar(){
+    public void refuel(){
         fuel=100;
     }
     /**
      *  @author María del Mar García Cabello
      *
      */
-    public void Moverse(){
+    public void useFuel(){
         fuel=fuel-0.5;
     }
     /**

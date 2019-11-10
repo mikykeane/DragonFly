@@ -219,6 +219,7 @@ public class DragonFly extends SingleAgent{
         this.send(outbox);
         System.out.println(outbox);
         state=LISTENING;
+        
      }
 
     
@@ -248,9 +249,9 @@ public class DragonFly extends SingleAgent{
                 if(parser.get("gps") != null) {
                     myGPS.GPSParser(parser);
                 }//En el caso de que sea Fuel, lo gestionamos en Fuel
-                if(parser.get("fuel") != null) {
-                    myFuel.FuelParser(parser);
-                }//En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
+                
+                myFuel.FuelParser(parser);
+                //En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
                 
                     goalParser(parser);
                 //En el caso de que sea status, 
@@ -265,7 +266,7 @@ public class DragonFly extends SingleAgent{
                 for(int i=0; i<data.length; i++){
                     data[i] = (byte) ja.get(i).asInt();
                 }
-                FileOutputStream fos = new FileOutputStream("mapa3.png");
+                FileOutputStream fos = new FileOutputStream(myMap+".png");
                 fos.write(data);
                 fos.close();
                 System.out.println("Traza Guardada");
@@ -304,15 +305,15 @@ public class DragonFly extends SingleAgent{
                 state=END;
                 System.err.println("El agente "+ this.getName()+ " se ha estrellado. Misión fracasada. Mejore la heurística");
                 break;
-            case "BAD_COMMAND":
+            case "BAD COMMAND":
                 state=END;
                 System.err.println("Error: Accion no reconocida");
                 break;
-            case "BAD_KEY":
+            case "BAD KEY":
                 state=END;
                 System.err.println("Error: La llave introducida es incorrecta.");
                 break;
-            case "BAD_MAP":
+            case "BAD MAP":
                 state=END;
                 System.err.println("Error: El mapa introducido no es válido. Corrija. ");
                 break;
@@ -322,16 +323,89 @@ public class DragonFly extends SingleAgent{
     
     
     private void think(){
-        
-    if (myScanner.magnetic[5][5]==1){
-         if (myScanner.elevation[5][5]>0){
-             myDirection="moveDW";
-            move();
-         }else
-            state=END;
+        if (myFuel.getFuel() <=5){
+            if (myScanner.elevation[5][5]>0){
+                myDirection="moveDW";
+                move();
+                //myFuel.useFuel();
+            }else {
+                //myFuel.refuel();
+                myDirection="refuel";
+                move();
+                System.out.println("Hacemos refuel, por que quedaba: " + myFuel.getFuel());
+            }
+        } 
+        else if (myScanner.magnetic[5][5]==1){
+            if (myScanner.elevation[5][5]>0){
+                myDirection="moveDW";
+                move();
+                //myFuel.useFuel();
+            }else
+                state=END;
         }else{
+        String movimiento; 
+        movimiento = decideAngle();
+        System.out.println("Quiere ir a: " + movimiento);
+        if (alturaPosible(movimiento)){
+            myDirection=movimiento;
+        }else{
+            myDirection="moveUP";
+        }
+
+        System.out.println("Finalmente se mueve a: " + myDirection);
+
+
+            //Realizamos el movimiento
+            move();
+            //myFuel.useFuel();
             
-            HashMap<Integer, String> angulos;
+        }  
+        
+    }
+    
+     public boolean casillaDisponible(String dir){
+        boolean disponible=true;
+        if (null != dir)switch (dir) {
+            case "moveN":
+                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>180)
+                    disponible=false;
+                break;
+            case "moveNW":
+                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>180)
+                    disponible=false;
+                break;
+            case "moveNE":
+                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>180)
+                    disponible=false;
+                break;
+            case "moveE":
+                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>180)
+                    disponible=false;
+                break;
+            case "moveSE":
+                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>180)
+                    disponible=false;
+                break;
+            case "moveS":
+                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>180)
+                    disponible=false;
+                break;
+            case "moveSW":
+                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>180)
+                    disponible=false;
+                break;
+            case "moveW":
+                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
+                    disponible=false;
+                break;
+            default:
+                break;
+        }
+        return disponible;
+    }
+    
+     public String decideAngle(){
+          HashMap<Integer, String> angulos;
             // Decidimos ángulo
              angulos=new HashMap<>();
             //Rellenamos el vector con los grados de los angulos
@@ -369,63 +443,9 @@ public class DragonFly extends SingleAgent{
             }
                 
         } 
-        System.out.println("Quiere ir a: " + movimiento);
-        if (alturaPosible(movimiento)){
-            myDirection=movimiento;
-        }else{
-            myDirection="moveUP";
-        }
-         
-        System.out.println(myDirection);
-       
-        
-        //Realizamos el movimiento
-        move();
-        }  
-        
-    }
-    
-     public boolean casillaDisponible(String dir){
-        boolean disponible=true;
-        if (null != dir)switch (dir) {
-            case "moveN":
-                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>170)
-                    disponible=false;
-                break;
-            case "moveNW":
-                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>170)
-                    disponible=false;
-                break;
-            case "moveNE":
-                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>170)
-                    disponible=false;
-                break;
-            case "moveE":
-                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>170)
-                    disponible=false;
-                break;
-            case "moveSE":
-                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>170)
-                    disponible=false;
-                break;
-            case "moveS":
-                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>170)
-                    disponible=false;
-                break;
-            case "moveSW":
-                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>170)
-                    disponible=false;
-                break;
-            case "moveW":
-                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
-                    disponible=false;
-                break;
-            default:
-                break;
-        }
-        return disponible;
-    }
-    
+        return movimiento; 
+     }
+
     
      public boolean alturaPosible(String dir){
         boolean posible=true;
