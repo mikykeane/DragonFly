@@ -147,7 +147,7 @@ public class DragonFly extends SingleAgent{
                 break;
                 case END:
                     logout();
-                    //end=true;
+                    end=true;
                     break;
             }
             
@@ -238,8 +238,10 @@ public class DragonFly extends SingleAgent{
             //Lo pasamos a un JSon para poder trabajar con el
             JsonObject parser = Json.parse(inbox.getContent()).asObject();
             
+            
             //Si es resultado, vamos a comprobar el estado en resultManagement
             if (parser.get("result") != null){
+                System.out.println(inbox.getContent());
                 resultManagement(parser);
             }else if (parser.get("perceptions") != null){
                 state=THINKING;
@@ -350,7 +352,7 @@ public class DragonFly extends SingleAgent{
         System.out.println("Quiere ir a: " + movimiento);
         if (alturaPosible(movimiento)){
             myDirection=movimiento;
-        }else{
+        }else if (myScanner.radar[5][5]<180){
             myDirection="moveUP";
         }
 

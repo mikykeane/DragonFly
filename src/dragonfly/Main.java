@@ -51,14 +51,14 @@ public class Main{
         System.out.println(virtualhost);
         System.out.println(username);
         System.out.println(pass);
-        String map = "map8"; 
+        String map = "map9"; 
 
 
         AgentsConnection.connect("isg2.ugr.es",6000, virtualhost, username, pass, false);
         
 
         try {                
-                dragonFly = new DragonFly(new AgentID("DronMejorado2"), map, virtualhost, username, pass);
+                dragonFly = new DragonFly(new AgentID("Dron123456"), map, virtualhost, username, pass);
            
                 dragonFly.start();
                 
