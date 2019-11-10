@@ -47,6 +47,7 @@ public class DragonFly extends SingleAgent{
     private int state;
     private String myMap;
     private String action; 
+    private int maxHeight=180;
     
     private String myUser;
     private String myPass; 
@@ -149,6 +150,7 @@ public class DragonFly extends SingleAgent{
                     logout();
                    // end=true;
                     break;
+                
             }
             
         }
@@ -300,6 +302,7 @@ public class DragonFly extends SingleAgent{
                 if (parser.get("in-reply-to").asString().equals("login")){
                     state=THINKING;
                     key=parser.get("key").asString();
+                    maxHeight=parser.get("max").asInt();
                     System.out.println("Recibido OK a login");
                 }
                                
@@ -311,11 +314,13 @@ public class DragonFly extends SingleAgent{
                 break;
             case "BAD COMMAND":
                 state=END;
+                
                 System.err.println("Error: Accion no reconocida");
                 break;
             case "BAD KEY":
                 state=END;
                 System.err.println("Error: La llave introducida es incorrecta.");
+                end=true;
                 break;
             case "BAD MAP":
                 state=END;
@@ -352,7 +357,7 @@ public class DragonFly extends SingleAgent{
         System.out.println("Quiere ir a: " + movimiento);
         if (alturaPosible(movimiento)){
             myDirection=movimiento;
-        }else if (myScanner.radar[5][5]<180){
+        }else if (myScanner.radar[5][5]<maxHeight){
             myDirection="moveUP";
         }
 
@@ -371,35 +376,35 @@ public class DragonFly extends SingleAgent{
         boolean disponible=true;
         if (null != dir)switch (dir) {
             case "moveN":
-                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>180)
+                if (myScanner.radar[4][5] == 0 || myScanner.radar[4][5]>maxHeight)
                     disponible=false;
                 break;
             case "moveNW":
-                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>180)
+                if (myScanner.radar[4][4] == 0 || myScanner.radar[4][4]>maxHeight)
                     disponible=false;
                 break;
             case "moveNE":
-                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>180)
+                if (myScanner.radar[4][6] == 0 || myScanner.radar[4][6]>maxHeight)
                     disponible=false;
                 break;
             case "moveE":
-                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>180)
+                if (myScanner.radar[5][6] == 0 || myScanner.radar[5][6]>maxHeight)
                     disponible=false;
                 break;
             case "moveSE":
-                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>180)
+                if (myScanner.radar[6][6] == 0 || myScanner.radar[6][6]>maxHeight)
                     disponible=false;
                 break;
             case "moveS":
-                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>180)
+                if (myScanner.radar[6][5] == 0 || myScanner.radar[6][5]>maxHeight)
                     disponible=false;
                 break;
             case "moveSW":
-                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>180)
+                if (myScanner.radar[6][4] == 0 || myScanner.radar[6][4]>maxHeight)
                     disponible=false;
                 break;
             case "moveW":
-                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>180)
+                if (myScanner.radar[5][4] == 0 || myScanner.radar[5][4]>maxHeight)
                     disponible=false;
                 break;
             default:
