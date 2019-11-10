@@ -54,6 +54,8 @@ public class DragonFly extends SingleAgent{
     private String key;
     private AgentID myServer;
     
+    private String previousMove;
+    
 
     /**
      *
@@ -246,9 +248,9 @@ public class DragonFly extends SingleAgent{
                
                     myScanner.ScannerParser(parser);
                 //En el caso de que sea GPS, lo gestionamos en GPS
-                if(parser.get("gps") != null) {
-                    myGPS.GPSParser(parser);
-                }//En el caso de que sea Fuel, lo gestionamos en Fuel
+                
+                myGPS.GPSParser(parser);
+                //En el caso de que sea Fuel, lo gestionamos en Fuel
                 
                 myFuel.FuelParser(parser);
                 //En el caso de que sea goal. MIRAR ESTO MAS DETENIDAMENTE
@@ -323,7 +325,7 @@ public class DragonFly extends SingleAgent{
     
     
     private void think(){
-        if (myFuel.getFuel() <=5){
+        if (myFuel.getFuel() <=10){
             if (myScanner.elevation[5][5]>0){
                 myDirection="moveDW";
                 move();
@@ -354,7 +356,7 @@ public class DragonFly extends SingleAgent{
 
         System.out.println("Finalmente se mueve a: " + myDirection);
 
-
+            previousMove=myDirection;
             //Realizamos el movimiento
             move();
             //myFuel.useFuel();
@@ -436,16 +438,107 @@ public class DragonFly extends SingleAgent{
                 distancia=360-anguloActual;
             }else distancia=anguloActual;
             
-            //Nos quedamos con la distancia mas pequeña
-            if(distanciaMinima>distancia && casillaDisponible(angulos.get(i))) {
-                distanciaMinima=distancia;
-                movimiento=angulos.get(i);
+            if (previousMove == oppositeAngle(angulos.get(i))){
+                distancia += 180;
             }
+            
+            //Nos quedamos con la distancia mas pequeña
+            if (casillaDisponible(angulos.get(i))){
+                if (iWasHereBefore(angulos.get(i))){
+                    distancia += 360;
+                }
+                if(distanciaMinima>distancia) {
+                    distanciaMinima=distancia;
+                    movimiento=angulos.get(i);
+                }
+            }
+            
                 
         } 
         return movimiento; 
      }
-
+     
+     public boolean iWasHereBefore(String dir){
+         boolean iWas = false;
+         if (null != dir)switch (dir) {
+            case "moveN":
+                if(myGPS.beenHere[myGPS.x-1][myGPS.y]){
+                    iWas=true;
+                }
+                break;
+            case "moveNW":
+                 if(myGPS.beenHere[myGPS.x-1][myGPS.y-1]){
+                    iWas=true;
+                }
+                break;
+            case "moveNE":
+                if(myGPS.beenHere[myGPS.x-1][myGPS.y+1]){
+                    iWas=true;
+                }
+                break;
+            case "moveE":
+                 if(myGPS.beenHere[myGPS.x][myGPS.y+1]){
+                    iWas=true;
+                }
+                break;
+            case "moveSE":
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y+1]){
+                    iWas=true;
+                }
+                break;
+            case "moveS":
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y]){
+                    iWas=true;
+                }
+                break;
+            case "moveSW":
+                 if(myGPS.beenHere[myGPS.x+1][myGPS.y-1]){
+                    iWas=true;
+                }
+                break;
+            case "moveW":
+                if(myGPS.beenHere[myGPS.x][myGPS.y-1]){
+                    iWas=true;
+                }
+                break;
+            default:
+                break;
+        }
+         return iWas;
+     }
+     
+    public String oppositeAngle(String dir){
+        String opdir= new String(); 
+        if (null != dir)switch (dir) {
+            case "moveN":
+                opdir = "moveS";
+                break;
+            case "moveNW":
+                opdir = "moveSE";
+                break;
+            case "moveNE":
+               opdir = "moveSW";
+                break;
+            case "moveE":
+                opdir = "moveW";
+                break;
+            case "moveSE":
+                opdir = "moveNW";
+                break;
+            case "moveS":
+                opdir = "moveN";
+                break;
+            case "moveSW":
+                opdir = "moveNE";
+                break;
+            case "moveW":
+                opdir = "moveE";
+                break;
+            default:
+                break;
+        }
+        return opdir;
+    }
     
      public boolean alturaPosible(String dir){
         boolean posible=true;
