@@ -51,7 +51,7 @@ public class Main{
         System.out.println(virtualhost);
         System.out.println(username);
         System.out.println(pass);
-        String map = "map4"; //Mapa que queremos que nuestro agente realice
+        String map = "map9"; //Mapa que queremos que nuestro agente realice
 
         //Conectamos con el servidor
         AgentsConnection.connect("isg2.ugr.es",6000, virtualhost, username, pass, false);
