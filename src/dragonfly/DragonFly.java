@@ -228,7 +228,7 @@ public class DragonFly extends SingleAgent{
     * @author Miguel Keane Cañizares, María del Mar García Cabello
     * 
     */
-    private void receiveMessage() throws FileNotFoundException, IOException {
+    private void receiveMessage() {
         try{
             //Recivimos un mensaje del servidor
             inbox= receiveACLMessage();
@@ -272,7 +272,7 @@ public class DragonFly extends SingleAgent{
                 end=true;
             }        
                
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | IOException ex) {
             Logger.getLogger(DragonFly.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
